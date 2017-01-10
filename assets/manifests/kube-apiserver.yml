@@ -91,6 +91,8 @@ spec:
     - name: certs
       mountPath: /etc/ssl/certs
       readOnly: true
+    - name: kubernetes
+      mountPath: /etc/kubernetes
   volumes:
   - name: secrets
     emptyDir: {}
