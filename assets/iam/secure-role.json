@@ -35,7 +35,9 @@
         "elasticloadbalancing:Create*",
         "elasticloadbalancing:Delete*",
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+        "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeLoadBalancers",
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer"
       ]
