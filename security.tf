@@ -63,7 +63,7 @@ resource "aws_security_group_rule" "compute_node_ports_32000" {
   protocol                 = "tcp"
   from_port                = "30000"
   to_port                  = "32767"
-  source_security_group_id = "${var.elb_sg}"
+  cidr_blocks              = [ "${values(var.elb_cidr)}" ]
 }
 
 #

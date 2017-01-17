@@ -55,23 +55,27 @@ variable "vpc_id" {
   description = "The VPC id of the platform"
 }
 variable "compute_subnets" {
-  description = "A list of the compute subnets id's"
+  description = "A map of the compute subnets id's"
   type        = "map"
 }
 variable "secure_subnets" {
-  description = "A list of the secure subnets id's"
+  description = "A map of the secure subnets id's"
   type        = "map"
 }
 variable "nat_subnets" {
-  description = "A list of the nat subnets id's"
+  description = "A map of the nat subnets id's"
   type        = "map"
 }
 variable "elb_subnets" {
-  description = "A list of the elb subnets id's"
+  description = "A map of the elb subnets id's"
   type        = "map"
 }
 variable "mgmt_subnets" {
-  description = "A list of the management subnets id's"
+  description = "A map of the management subnets id's"
+  type        = "map"
+}
+variable "elb_cidr" {
+  description = "A map of the elb subnets to cidr blocks"
   type        = "map"
 }
 variable "compute_sg" {
