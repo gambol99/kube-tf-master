@@ -30,7 +30,6 @@ data "gotemplate_file" "secure_user_data" {
     environment            = "${var.environment}"
     etcd_memberlist        = "${join(",", formatlist("%s=https://%s:2380", keys(var.secure_nodes), values(var.secure_nodes)))}"
     flannel_cidr           = "${var.flannel_cidr}"
-    flannel_memberlist     = "${join(",", formatlist("https://%s:2379", values(var.secure_nodes)))}"
     kmsctl_image           = "${var.kmsctl_image}"
     kmsctl_release_md5     = "${var.kmsctl_release_md5}"
     kmsctl_release_url     = "${var.kmsctl_release_url}"
@@ -52,7 +51,7 @@ resource "aws_launch_configuration" "secure" {
   image_id                    = "${data.aws_ami.coreos.id}"
   instance_type               = "${var.secure_flavor}"
   key_name                    = "${var.key_name}"
-  name_prefix                 = "${var.environment}-secure-"
+  name_prefix                 = "${var.environment}-secure-asg${count.index}"
   security_groups             = [ "${var.secure_sg}" ]
   user_data                   = "${data.gotemplate_file.secure_user_data.rendered}"
 
@@ -76,17 +75,19 @@ resource "aws_launch_configuration" "secure" {
 
 ## Secure AutoScaling Group
 resource "aws_autoscaling_group" "secure" {
+  count                     = "${length(var.secure_nodes_asg)/2}"
+
   default_cooldown          = "${var.secure_asg_grace_period}"
-  desired_capacity          = "${length(values(var.secure_nodes))}"
+  desired_capacity          = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")}"
   force_delete              = true
   health_check_grace_period = 10
   health_check_type         = "EC2"
   launch_configuration      = "${aws_launch_configuration.secure.name}"
-  max_size                  = "${length(values(var.secure_nodes))+2}"
-  min_size                  = "${length(values(var.secure_nodes))}"
-  name                      = "${var.environment}-secure-asg"
+  max_size                  = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")+1}"
+  min_size                  = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")}"
+  name                      = "${var.environment}-secure-asg${count.index}"
   termination_policies      = [ "OldestInstance", "Default" ]
-  vpc_zone_identifier       = [ "${var.secure_subnets}" ]
+  vpc_zone_identifier       = [ "${lookup(var.secure_subnets, lookup(var.secure_nodes_asg, "zone${count.index}_zone"))}" ]
 
   tag {
     key                 = "Name"
@@ -105,59 +106,10 @@ resource "aws_autoscaling_group" "secure" {
     value               = "secure"
     propagate_at_launch = true
   }
-}
 
-### Secure Etcd ELB
-#resource "aws_elb" "etcd" {
-#  internal        = true
-#  depends_on      = [ "aws_security_group.secure_elb" ]
-#  name            = "${var.environment}-secure-elb"
-#  subnets         = [ "${var.secure_subnets}" ]
-#  security_groups = [ "${aws_security_group.secure_elb.id}" ]
-#
-#  listener {
-#    instance_port       = 2379
-#    instance_protocol   = "tcp"
-#    lb_port             = 2379
-#    lb_protocol         = "tcp"
-#  }
-#
-#  health_check {
-#    healthy_threshold   = 2
-#    unhealthy_threshold = 3
-#    timeout             = 10
-#    target              = "TCP:2379"
-#    interval            = 15
-#  }
-#
-#  connection_draining         = true
-#  connection_draining_timeout = 120
-#  cross_zone_load_balancing   = true
-#  idle_timeout                = 30
-#
-#  tags {
-#    Name = "${var.environment}-etcd-elb"
-#    Env  = "${var.environment}"
-#    Role = "etcd-elb"
-#  }
-#}
-#
-### Attach the Secure ELB to Secure ASG
-#resource "aws_autoscaling_attachment" "kubeapi_internal" {
-#  autoscaling_group_name = "${aws_autoscaling_group.secure.name}"
-#  elb                    = "${aws_elb.etcd.id}"
-#}
-#
-### DNS Name for Secure API ELB
-#resource "aws_route53_record" "etcd" {
-#  zone_id = "${var.private_zone}"
-#  name    = "${var.etcd_dns}.${var.private_zone_name}"
-#  type    = "A"
-#
-#  alias {
-#    name                   = "${aws_elb.etcd.dns_name}"
-#    zone_id                = "${aws_elb.etcd.zone_id}"
-#    evaluate_target_health = true
-#  }
-#}
-#
+  tag {
+    key                 = "KubernetesCluster"
+    value               = "${var.environment}"
+    propagate_at_launch = true
+  }
+}

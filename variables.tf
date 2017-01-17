@@ -44,14 +44,6 @@ variable "enable_calico" {
 #
 ## AWS PROVIDER
 #
-#variable "aws_shared_credentials_file" {
-#  description = "The file containing the AWS credentials"
-#  default     = "/root/.aws/credentials"
-#}
-#variable "aws_profile" {
-#  description = "The AWS profile to use from within the credentials file"
-#  default     = "terraform-bug"
-#}
 variable "aws_region" {
   description = "The AWS Region we are building the cluster in"
 }
@@ -64,23 +56,23 @@ variable "vpc_id" {
 }
 variable "compute_subnets" {
   description = "A list of the compute subnets id's"
-  type        = "list"
+  type        = "map"
 }
 variable "secure_subnets" {
   description = "A list of the secure subnets id's"
-  type        = "list"
+  type        = "map"
 }
 variable "nat_subnets" {
   description = "A list of the nat subnets id's"
-  type        = "list"
+  type        = "map"
 }
 variable "elb_subnets" {
   description = "A list of the elb subnets id's"
-  type        = "list"
+  type        = "map"
 }
 variable "mgmt_subnets" {
   description = "A list of the management subnets id's"
-  type        = "list"
+  type        = "map"
 }
 variable "compute_sg" {
   description = "The AWS security group id for the compute security group"
@@ -102,11 +94,15 @@ variable "mgmt_sg" {
 ## SECURE LAYER RELATED ##
 #
 variable "secure_nodes" {
-  description = "A list of the secure nodes hostnames of ip addresses"
+  description = "A map of the secure nodes hostnames of ip addresses"
   type        = "map"
 }
-variable "secure_nodes_info" {
-  description = "The secure nodes detail map, container zones and subnets"
+variable "secure_nodes_zones" {
+  description = "A map containing the secure nodes and their corresponding zones"
+  type        = "map"
+}
+variable "secure_nodes_asg" {
+  description = "A map of the secure auto-scaling groups and their availability_zone zones and size"
   type        = "map"
 }
 variable "secure_flavor" {
