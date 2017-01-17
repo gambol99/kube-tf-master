@@ -1,14 +1,14 @@
 
-## Secure ELB Security Group
-resource "aws_security_group" "secure_elb" {
-  name        = "${var.environment}-secure-elb"
-  description = "Secure ELB Security Group for ${var.environment} environment"
+## ETCD ELB Security Group
+resource "aws_security_group" "etcd_elb" {
+  name        = "${var.environment}-etcd-elb"
+  description = "Etcd ELB Security Group for ${var.environment} environment"
   vpc_id      = "${var.vpc_id}"
 
   tags {
-    Name = "${var.environment}-secure-elb"
+    Name = "${var.environment}-etcd-elb"
     Env  = "${var.environment}"
-    Role = "secure-elb"
+    Role = "etcd-elb"
   }
 }
 
@@ -67,33 +67,33 @@ resource "aws_security_group_rule" "compute_node_ports_32000" {
 }
 
 #
-## Secure ELB Rules
+## Ingress Etcd ELB
 #
 
 ## Ingress: Rule permits compute subnets access to Kubernetes API
-resource "aws_security_group_rule" "secure_elb_permit_2379_compute" {
+resource "aws_security_group_rule" "etcd_elb_permit_2379_compute" {
   type                     = "ingress"
-  security_group_id        = "${aws_security_group.secure_elb.id}"
+  security_group_id        = "${aws_security_group.etcd_elb.id}"
   from_port                = 2379
   to_port                  = 2379
   protocol                 = "tcp"
   source_security_group_id = "${var.compute_sg}"
 }
 
-## Ingress: Rule permits traffic from secure -> elb
-resource "aws_security_group_rule" "secure_elb_permit_2379_secure" {
+## Ingress: Rule permits traffic from etcd -> elb
+resource "aws_security_group_rule" "etcd_elb_permit_2379_secure" {
   type                     = "ingress"
   security_group_id        = "${var.secure_sg}"
   protocol                 = "tcp"
   from_port                = 2379
   to_port                  = 2379
-  source_security_group_id = "${aws_security_group.secure_elb.id}"
+  source_security_group_id = "${aws_security_group.etcd_elb.id}"
 }
 
-## Egress: Rule permits traffic from secure -> elb
-resource "aws_security_group_rule" "secure_elb_outbound_2379" {
+## Egress: Rule permits traffic from etcd -> elb
+resource "aws_security_group_rule" "etcd_elb_outbound_2379" {
   type                     = "egress"
-  security_group_id        = "${aws_security_group.secure_elb.id}"
+  security_group_id        = "${aws_security_group.etcd_elb.id}"
   protocol                 = "tcp"
   from_port                = 2379
   to_port                  = 2379
