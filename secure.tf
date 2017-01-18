@@ -84,6 +84,7 @@ resource "aws_autoscaling_group" "secure" {
   health_check_type         = "EC2"
   launch_configuration      = "${aws_launch_configuration.secure.name}"
   max_size                  = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")+1}"
+  min_elb_capacity          = 1
   min_size                  = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")}"
   name                      = "${var.environment}-secure-asg${count.index}"
   termination_policies      = [ "OldestInstance", "Default" ]
