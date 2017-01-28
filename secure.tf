@@ -80,7 +80,6 @@ resource "aws_autoscaling_group" "secure" {
   default_cooldown          = "${var.secure_asg_grace_period}"
   desired_capacity          = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")}"
   force_delete              = true
-  health_check_grace_period = 10
   health_check_type         = "EC2"
   launch_configuration      = "${aws_launch_configuration.secure.name}"
   max_size                  = "${lookup(var.secure_nodes_asg, "zone${count.index}_size")+1}"
